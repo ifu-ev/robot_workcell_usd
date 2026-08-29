@@ -1,0 +1,371 @@
+#usda 1.0
+(
+    customLayerData = {
+        dictionary cameraSettings = {
+            dictionary Front = {
+                double3 position = (5, 0, 0)
+                double radius = 5
+            }
+            dictionary Perspective = {
+                double3 position = (2.514316381761728, -3.5361756679361895, 1.7281759598059063)
+                double3 target = (-2.1870890535582364, 9.998222352288506, -1.2146626839649926)
+            }
+            dictionary Right = {
+                double3 position = (0, -5, 0)
+                double radius = 5
+            }
+            dictionary Top = {
+                double3 position = (0, 0, 5)
+                double radius = 5
+            }
+            string boundCamera = "/OmniverseKit_Persp"
+        }
+        dictionary omni_layer = {
+            string authoring_layer = "./gearbox_disassembly.usda"
+        }
+        dictionary renderSettings = {
+        }
+        dictionary robot_workcell_usd = {
+            bool ros2_omnigraphs_included = 0
+            string scene_kind = "gearbox_disassembly"
+            string source_scene = "/mnt/linux-data/projects/Collected_zelle_ur5_gb_v5/zelle_ur5_gb_v5.usd"
+            string target_isaac_sim = "5.1"
+        }
+    }
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Xform "World"
+{
+    def DomeLight "DomeLight" (
+        active = true
+        apiSchemas = ["ShapingAPI"]
+    )
+    {
+        float inputs:intensity = 200
+        float inputs:shaping:cone:angle = 180
+        float inputs:shaping:cone:softness
+        float inputs:shaping:focus
+        color3f inputs:shaping:focusTint
+        asset inputs:shaping:ies:file
+        token inputs:texture:format = "latlong"
+        token visibility = "inherited"
+        quatd xformOp:orient = (1, 0, 0, 0)
+        double3 xformOp:scale = (1, 1, 1)
+        double3 xformOp:translate = (0, 0, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+
+    def RectLight "RectLight" (
+        active = true
+        apiSchemas = ["ShapingAPI"]
+    )
+    {
+        float3[] extent = [(-0.5, -0.5, -0), (0.5, 0.5, 0)]
+        float inputs:exposure = 0
+        float inputs:height = 0.8
+        float inputs:intensity = 2500
+        float inputs:shaping:cone:angle = 180
+        float inputs:shaping:cone:softness
+        float inputs:shaping:focus
+        color3f inputs:shaping:focusTint
+        asset inputs:shaping:ies:file
+        float inputs:width = 1.4
+        token visibility = "inherited"
+        quatd xformOp:orient = (1, 0, 0, 0)
+        double3 xformOp:scale = (1, 1, 1)
+        double3 xformOp:translate = (0.8606969448171249, 0.29895544812101793, 2.1)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+
+    def Mesh "Plane" (
+        active = true
+        apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        float3[] extent = [(-0.5, -0.5, -0), (0.5, 0.5, 0)]
+        int[] faceVertexCounts = [4]
+        int[] faceVertexIndices = [0, 1, 3, 2]
+        rel material:binding = </World/Looks/drape_blue> (
+            bindMaterialAs = "weakerThanDescendants"
+        )
+        normal3f[] normals = [(0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1)] (
+            interpolation = "faceVarying"
+        )
+        point3f[] points = [(-0.5, -0.5, 0), (0.5, -0.5, 0), (-0.5, 0.5, 0), (0.5, 0.5, 0)]
+        texCoord2f[] primvars:st = [(0, 0), (1, 0), (1, 1), (0, 1)] (
+            interpolation = "faceVarying"
+        )
+        uniform token subdivisionScheme = "none"
+        token visibility = "inherited"
+        quatd xformOp:orient = (0.7071067811865476, 0.7071067811865475, 0, 0)
+        double3 xformOp:scale = (4.400000065565109, 3.9000000581145287, 1)
+        double3 xformOp:translate = (0.8, 0.8, 1)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+
+    def Scope "Looks"
+    {
+        def Material "drape_blue"
+        {
+            token outputs:mdl:displacement.connect = </World/Looks/drape_blue/Shader.outputs:out>
+            token outputs:mdl:surface.connect = </World/Looks/drape_blue/Shader.outputs:out>
+            token outputs:mdl:volume.connect = </World/Looks/drape_blue/Shader.outputs:out>
+
+            def Shader "Shader"
+            {
+                uniform token info:implementationSource = "sourceAsset"
+                uniform asset info:mdl:sourceAsset = @OmniPBR.mdl@
+                uniform token info:mdl:sourceAsset:subIdentifier = "OmniPBR"
+                float inputs:albedo_add = 0
+                float inputs:ao_to_diffuse = 0.19999999
+                float inputs:bump_factor = 1
+                float inputs:detail_bump_factor = 0.97999996
+                asset inputs:detail_normalmap_texture = @@ (
+                    colorSpace = "auto"
+                )
+                color3f inputs:diffuse_color_constant = (0.8730192, 0.91068226, 0.93050194)
+                color3f inputs:diffuse_tint = (0.2934363, 0.6971952, 1)
+                float inputs:emissive_intensity = 53.5
+                bool inputs:enable_emission = 0
+                bool inputs:enable_opacity = 0
+                float inputs:geometry_normal_roughness_strength = 0.81
+                float inputs:metallic_constant = 0.08
+                asset inputs:normalmap_texture = @../assets/textures/fabric_0032_normal_opengl_1k.png@ (
+                    colorSpace = "auto"
+                )
+                float inputs:opacity_constant = 0.26
+                float inputs:reflection_roughness_constant = 0.13
+                float inputs:round_edges_radius = 0
+                float inputs:specular_level = 0.78999996
+                int inputs:uv_space_index = 0
+                token outputs:out (
+                    renderType = "material"
+                )
+            }
+        }
+
+        def Material "OmniPBR"
+        {
+            token outputs:mdl:displacement.connect = </World/Looks/OmniPBR/Shader.outputs:out>
+            token outputs:mdl:surface.connect = </World/Looks/OmniPBR/Shader.outputs:out>
+            token outputs:mdl:volume.connect = </World/Looks/OmniPBR/Shader.outputs:out>
+
+            def Shader "Shader"
+            {
+                uniform token info:implementationSource = "sourceAsset"
+                uniform asset info:mdl:sourceAsset = @OmniPBR.mdl@
+                uniform token info:mdl:sourceAsset:subIdentifier = "OmniPBR"
+                color3f inputs:diffuse_color_constant = (0.98841697, 0.4411621, 0.07632564)
+                color3f inputs:diffuse_tint = (0.96525097, 0.4282757, 0.044722065)
+                float inputs:reflection_roughness_constant = 0.84999996
+                token outputs:out (
+                    renderType = "material"
+                )
+            }
+        }
+    }
+
+    def Xform "Plank"
+    {
+        quatd xformOp:orient = (1, 0, 0, 0)
+        double3 xformOp:scale = (1, 1, 1)
+        double3 xformOp:translate = (1.1, 0.37, 0.87)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def Mesh "Cube" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsCollisionAPI", "PhysxCollisionAPI", "PhysxConvexHullCollisionAPI", "PhysicsMeshCollisionAPI", "PhysxSDFMeshCollisionAPI", "MaterialBindingAPI"]
+        )
+        {
+            float3[] extent = [(-0.5, -0.5, -0.5), (0.5, 0.5, 0.5)]
+            int[] faceVertexCounts = [4, 4, 4, 4, 4, 4]
+            int[] faceVertexIndices = [0, 1, 3, 2, 4, 6, 7, 5, 6, 2, 3, 7, 4, 5, 1, 0, 4, 0, 2, 6, 5, 7, 3, 1]
+            rel material:binding = </World/Looks/OmniPBR> (
+                bindMaterialAs = "weakerThanDescendants"
+            )
+            normal3f[] normals = [(0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, -1), (0, 0, -1), (0, 0, -1), (0, 0, -1), (0, 1, 0), (0, 1, 0), (0, 1, 0), (0, 1, 0), (0, -1, 0), (0, -1, 0), (0, -1, 0), (0, -1, 0), (-1, 0, 0), (-1, 0, 0), (-1, 0, 0), (-1, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0)] (
+                interpolation = "faceVarying"
+            )
+            uniform token physics:approximation = "sdf"
+            bool physics:collisionEnabled = 0
+            bool physics:kinematicEnabled = 0
+            bool physics:rigidBodyEnabled = 0
+            int physxRigidBody:solverPositionIterationCount = 64
+            int physxRigidBody:solverVelocityIterationCount = 4
+            point3f[] points = [(-0.5, -0.5, 0.5), (0.5, -0.5, 0.5), (-0.5, 0.5, 0.5), (0.5, 0.5, 0.5), (-0.5, -0.5, -0.5), (0.5, -0.5, -0.5), (-0.5, 0.5, -0.5), (0.5, 0.5, -0.5)]
+            texCoord2f[] primvars:st = [(0, 0), (1, 0), (1, 1), (0, 1), (1, 0), (1, 1), (0, 1), (0, 0), (0, 1), (0, 0), (1, 0), (1, 1), (0, 0), (1, 0), (1, 1), (0, 1), (0, 0), (1, 0), (1, 1), (0, 1), (1, 0), (1, 1), (0, 1), (0, 0)] (
+                interpolation = "faceVarying"
+            )
+            uniform token subdivisionScheme = "none"
+            quatd xformOp:orient = (1, 0, 0, 0)
+            double3 xformOp:scale = (0.7, 0.7, 0.05)
+            double3 xformOp:translate = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+        }
+    }
+
+    def Material "Plank_01" (
+        prepend apiSchemas = ["PhysicsMaterialAPI"]
+    )
+    {
+        float physics:dynamicFriction = 1
+        float physics:staticFriction = 1
+    }
+
+    def CylinderLight "CylinderLight" (
+        prepend apiSchemas = ["ShapingAPI"]
+    )
+    {
+        float3[] extent = [(-5, -5, -50), (5, 5, 50)]
+        float inputs:intensity = 30000
+        float inputs:length = 100
+        float inputs:radius = 5
+        float inputs:shaping:cone:angle = 180
+        float inputs:shaping:cone:softness
+        float inputs:shaping:focus
+        color3f inputs:shaping:focusTint
+        asset inputs:shaping:ies:file
+        quatd xformOp:orient = (0.5000000000000001, 0.5, 0.49999999999999994, 0.5)
+        double3 xformOp:scale = (1, 1, 1)
+        double3 xformOp:translate = (0, 0, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+
+    def Mesh "Plane_01"
+    {
+        float3[] extent = [(-0.5, -0.5, -0), (0.5, 0.5, 0)]
+        int[] faceVertexCounts = [4]
+        int[] faceVertexIndices = [0, 1, 3, 2]
+        normal3f[] normals = [(0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1)] (
+            interpolation = "faceVarying"
+        )
+        point3f[] points = [(-0.5, -0.5, 0), (0.5, -0.5, 0), (-0.5, 0.5, 0), (0.5, 0.5, 0)]
+        texCoord2f[] primvars:st = [(0, 0), (1, 0), (1, 1), (0, 1)] (
+            interpolation = "faceVarying"
+        )
+        uniform token subdivisionScheme = "none"
+        quatd xformOp:orient = (1, 0, 0, 0)
+        double3 xformOp:scale = (10, 10, 1)
+        double3 xformOp:translate = (0, 0, -0.02)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+
+    def PhysicsFixedJoint "FixedJoint"
+    {
+        rel physics:body0 = </World>
+        rel physics:body1 = </World/GearBox_2S_Reduction/SLD/SLD/GEAR_BOX_RIGHTSIDE_FROM_REAR>
+        float physics:breakForce = 3.4028235e38
+        float physics:breakTorque = 3.4028235e38
+        point3f physics:localPos0 = (1.0077223e-8, 9.381783e-9, -2.441078e-8)
+        point3f physics:localPos1 = (-1.1038835, -0.35928586, -0.9066678)
+        quatf physics:localRot0 = (1, -7.261356e-13, -9.0627975e-7, -1.4732954e-14)
+        quatf physics:localRot1 = (0.9998047, 1.5821987e-8, 0.019763874, 3.2179756e-10)
+    }
+
+    def PhysicsScene "PhysicsScene" (
+        prepend apiSchemas = ["PhysxSceneAPI", "NewtonSceneAPI"]
+    )
+    {
+        bool physxScene:enableStabilization = 1
+        uniform uint physxScene:minPositionIterationCount = 16
+        uniform uint physxScene:minVelocityIterationCount = 4
+    }
+
+    def Xform "ur5e_" (
+        prepend payload = @../assets/robots/ur5e_with_robotiq_2f_140/ur5e.usd@
+    )
+    {
+        matrix4d xformOp:transform = ( (-3.42285420007471e-8, -0.9999999999999993, 0, 0), (0.9999999999999993, -3.42285420007471e-8, 0, 0), (0, 0, 1, 0), (0.375, 0.3700000047683716, 0.8100000023841858, 1) )
+        uniform token[] xformOpOrder = ["xformOp:transform"]
+    }
+
+    def Xform "Zivid" (
+        prepend references = @../assets/sensors/zivid/zivid2.usd@
+    )
+    {
+        matrix4d xformOp:transform = ( (2.393003950551531e-8, -0.5735764727859771, -0.819152018776977, 0), (0.9999999999999998, 2.393003950551531e-8, 1.2457189502157462e-8, 0), (1.2457189502157462e-8, -0.819152018776977, 0.5735764727859775, 0), (1.0499999523162842, 0.75, 1.4500000476837158, 1) )
+        uniform token[] xformOpOrder = ["xformOp:transform"]
+    }
+
+    def Xform "GearBox_2S_Reduction" (
+        prepend payload = @../assets/workpiece/GearBox/GearBox_2S_Reduction_pickplace.usda@
+    )
+    {
+        matrix4d xformOp:transform = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (1.1, 0.37, 1, 1) )
+        uniform token[] xformOpOrder = ["xformOp:transform"]
+    }
+
+    def Xform "zelle_fixed" (
+        prepend payload = @../assets/workcells/racpro-isaac/zelle_fixed.usd@
+    )
+    {
+        matrix4d xformOp:transform = ( (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1) )
+        uniform token[] xformOpOrder = ["xformOp:transform"]
+    }
+}
+
+def "Render" (
+    hide_in_stage_window = true
+    no_delete = true
+)
+{
+    def "OmniverseKit"
+    {
+        def "HydraTextures" (
+            hide_in_stage_window = true
+            no_delete = true
+        )
+        {
+            def RenderProduct "omni_kit_widget_viewport_ViewportTexture_0" (
+                prepend apiSchemas = ["OmniRtxSettingsCommonAdvancedAPI_1", "OmniRtxSettingsRtAdvancedAPI_1", "OmniRtxSettingsPtAdvancedAPI_1", "OmniRtxPostColorGradingAPI_1", "OmniRtxPostChromaticAberrationAPI_1", "OmniRtxPostBloomPhysicalAPI_1", "OmniRtxPostMatteObjectAPI_1", "OmniRtxPostCompositingAPI_1", "OmniRtxPostDofAPI_1", "OmniRtxPostMotionBlurAPI_1", "OmniRtxPostTvNoiseAPI_1", "OmniRtxPostTonemapIrayReinhardAPI_1", "OmniRtxPostDebugSettingsAPI_1", "OmniRtxDebugSettingsAPI_1"]
+                hide_in_stage_window = true
+                no_delete = true
+            )
+            {
+                rel camera = </OmniverseKit_Persp>
+                token omni:rtx:background:source:texture:textureMode = "repeatMirrored"
+                token omni:rtx:background:source:type = "domeLight"
+                bool omni:rtx:dlss:frameGeneration = 0
+                bool omni:rtx:material:db:nonVisualMaterialCSV:enabled = 0
+                bool omni:rtx:material:db:syncLoads = 1
+                token omni:rtx:post:dlss:execMode = "performance"
+                bool omni:rtx:post:registeredCompositing:invertColorCorrection = 1
+                bool omni:rtx:post:registeredCompositing:invertToneMap = 1
+                bool omni:rtx:pt:lightcache:cached:dontResolveConflicts = 1
+                int omni:rtx:pt:maxSamplesPerLaunch = 2073600
+                int omni:rtx:pt:mgpu:maxPixelsPerRegionExponent = 12
+                color3f omni:rtx:rt:ambientLight:color = (0.1, 0.1, 0.1)
+                bool omni:rtx:rt:demoire = 0
+                bool omni:rtx:rt:lightcache:spatialCache:dontResolveConflicts = 1
+                bool omni:rtx:scene:hydra:materialSyncLoads = 1
+                bool omni:rtx:scene:hydra:mdlMaterialWarmup = 1
+                uint omni:rtx:viewTile:limit = 4294967295
+                rel orderedVars = </Render/Vars/LdrColor>
+                custom bool overrideClipRange = 0
+                uniform int2 resolution = (1280, 720)
+            }
+        }
+    }
+
+    def RenderSettings "OmniverseGlobalRenderSettings" (
+        prepend apiSchemas = ["OmniRtxSettingsGlobalRtAdvancedAPI_1", "OmniRtxSettingsGlobalPtAdvancedAPI_1"]
+        no_delete = true
+    )
+    {
+        rel products = </Render/OmniverseKit/HydraTextures/omni_kit_widget_viewport_ViewportTexture_0>
+    }
+
+    def "Vars"
+    {
+        def RenderVar "LdrColor" (
+            hide_in_stage_window = true
+            no_delete = true
+        )
+        {
+            uniform string sourceName = "LdrColor"
+        }
+    }
+}
+

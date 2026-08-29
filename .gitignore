@@ -1,0 +1,7 @@
+
+# Isaac Sim / Omniverse generated UI artifacts
+**/.thumbs/
+
+# Local USD recovery copies
+*.usd.bak
+*.usda.bak
