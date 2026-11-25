@@ -21,23 +21,11 @@ source assets used to construct the USD package in its parent directory.
   repository-relative asset resolution. No endorsement by Universal Robots
   is implied.
 
-## Robotiq 2F-140 source material
+## Robotiq 2F-140 gripper
 
-- Upstream repository:
-  https://github.com/ros-industrial-attic/robotiq
-- Upstream branch: `kinetic-devel`
-- License-text source revision:
-  `45196f6558fe8ba9d89bc8a105396c68c3e7e892`
-- Local license text:
-  `Robotiq-ros-industrial-attic-robotiq-LICENSE`
-- Local derived files:
-  `robotiq_2f_140.usd`, `robotiq_2f_140_base.usd`,
-  `robotiq_2f_140_robot.usd`, `robotiq_2f_140_physics.usd`,
-  `robotiq_2f_140_sensor.usd`
-- Local modifications:
-  USD composition references were converted or repaired for portable,
-  repository-relative asset resolution. No endorsement by Robotiq,
-  ROS-Industrial, or contributors is implied.
+The gripper package lives in `../../grippers/robotiq_2f_140/`, shared with the
+other gripper robots; its license text and notice are in that folder's
+`LICENSES/`. This package only contains the robot-specific mounting layer.
 
 ## Scope
 

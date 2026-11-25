@@ -15,7 +15,7 @@ a=p.parse_args()
 if not a.pickit and not a.moveit: p.error("Select --pickit and/or --moveit")
 if a.width<=0 or a.height<=0: p.error("width and height must be positive")
 root=Path(a.root).expanduser().resolve()
-scene=Path(a.scene).expanduser().resolve() if a.scene else root/"scenes/gearbox_disassembly.usda"
+scene=Path(a.scene).expanduser().resolve() if a.scene else root/"scenes/gearbox_disassembly_ur5e.usda"
 if not scene.is_file(): p.error(f"Scene does not exist: {scene}")
 
 from isaacsim import SimulationApp

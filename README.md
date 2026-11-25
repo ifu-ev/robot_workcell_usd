@@ -1,10 +1,24 @@
 # Robot Workcell USD
 
-Portable Isaac Sim USD assets for a gearbox-disassembly workcell with a UR5e + Robotiq 2F-140, Zivid camera, fixed workcell, and gearbox.
+Portable Isaac Sim USD scenes and assets for three robot cells around a fixed workcell with a Zivid camera:
+
+| Scene | Robot | Task |
+|---|---|---|
+| `scenes/gearbox_disassembly_ur5e.usda` | UR5e + Robotiq 2F-140 | Gearbox disassembly (tilted Zivid) |
+| `scenes/gearbox_disassembly_crx5ia.usda` | FANUC CRX-5iA + Robotiq 2F-140 | Gearbox disassembly (recentred Zivid) |
+| `scenes/laser_cleaning_flywheel.usda` | FANUC CRX-5iA + laser head | Laser cleaning of a rusted flywheel on a roller conveyor |
+
+All scenes include ROS 2 OmniGraphs (topic-based joint control, joint states, clock, Zivid camera, TF) and keep `/clock`, `/tf` and `/joint_states` monotonic across Stop/Play.
 
 ## Workcell overview
 
+UR5e + Robotiq 2F-140 (`scenes/gearbox_disassembly_ur5e.usda`):
+
 ![Isaac Sim gearbox-disassembly workcell with UR5e, Robotiq 2F-140 gripper, Zivid camera, enclosure and gearbox](docs/images/workcell.png)
+
+FANUC CRX-5iA + Robotiq 2F-140 (`scenes/gearbox_disassembly_crx5ia.usda`):
+
+![Isaac Sim gearbox-disassembly workcell with FANUC CRX-5iA, Robotiq 2F-140 gripper, Zivid camera, enclosure and gearbox](docs/images/workcell_crx5ia.png)
 
 ## Gearbox workpiece
 
@@ -15,34 +29,43 @@ Portable Isaac Sim USD assets for a gearbox-disassembly workcell with a UR5e + R
 
 ```text
 ├── assets
-│   ├── grippers
-│   ├── robots
-│   │   └── ur5e_with_robotiq_2f_140
-│   ├── sensors
-│   │   └── zivid
-│   ├── textures
-│   │   └── fabric_0032_normal_opengl_1k.png
-│   ├── workcells
-│   │   └── racpro-isaac
-│   └── workpiece
-│       └── GearBox
+│   ├── grippers
+│   │   └── robotiq_2f_140             # shared by both gripper robots
+│   ├── robots
+│   │   ├── ur5e_with_robotiq_2f_140
+│   │   ├── crx5ia_with_robotiq_2f_140
+│   │   └── crx5ia_with_laser_head
+│   ├── sensors
+│   │   └── zivid
+│   ├── textures
+│   │   └── fabric_0032_normal_opengl_1k.png
+│   ├── workcells
+│   │   └── racpro-isaac
+│   └── workpiece
+│       ├── GearBox
+│       └── FlyWheel
 ├── docs
 │   └── images
-│       ├── gearbox.jpg
-│       └── workcell.jpg
+│       ├── gearbox.png
+│       ├── workcell.png
+│       └── workcell_crx5ia.png
 ├── LICENSE.txt
 ├── README.md
 ├── scenes
-│   └── gearbox_disassembly.usda
+│   ├── gearbox_disassembly_ur5e.usda
+│   ├── gearbox_disassembly_crx5ia.usda
+│   ├── laser_cleaning.usda              # laser cell without a workpiece
+│   └── laser_cleaning_flywheel.usda     # laser cell + flywheel
 ├── scripts
-│   └── add_pickit_and_ros2_omnigraph.py
+│   ├── add_pickit_and_ros2_omnigraph.py
+│   └── laser_cleaning                 # laser simulation (see its README.md)
 └── THIRD_PARTY_NOTICES.md
-
-
 ```
+
 ## Requirements
 
 - NVIDIA Isaac Sim **6.1**.
+- Internet access for the laser cell: its conveyor is loaded from NVIDIA's Isaac Sim asset server.
 - ROS 2 Jazzy (Only for ROS2 topic based controller or point cloud publisher)
 
 Set your Isaac Sim location once per terminal:
@@ -66,15 +89,21 @@ git checkout isaacsim_6.1
 
 ```
 
-## Open the base scene
+## Open a scene
 
-Start Isaac Sim 6.1 and open:
+Start Isaac Sim 6.1 and open one of the scenes, e.g.:
 
 ```text
-<repository-root>/scenes/gearbox_disassembly.usda
+<repository-root>/scenes/gearbox_disassembly_ur5e.usda
 ```
 
-Open `scenes/gearbox_disassembly.usda` in Isaac Sim 6.1. Before adding ROS graphs, press Play and confirm that the robot, gripper, workcell, and gearbox are stable.
+Press Play and confirm that the robot, gripper (or laser head), workcell and workpiece are stable. The ROS 2 graphs are already part of the scenes; the builder below recreates them for the UR5e scene.
+
+## Laser-cleaning cell
+
+`scenes/laser_cleaning.usda` is the cell without a workpiece: CRX-5iA with laser head (emitter 0.18 m along `fanuc_flange` +Z), Zivid camera, roller conveyor, ROS 2 graphs and physics, plus an empty `/World/targets` group. `scenes/laser_cleaning_flywheel.usda` sublayers it and adds the rusted flywheel at `/World/targets/part`, resting on the rollers under the Zivid axis. To use another workpiece, add a scene that sublayers `laser_cleaning.usda` and references the part at `/World/targets/part`; keep `laser_cleaning.usda` itself free of workpieces so that every target scene picks up changes to the cell.
+
+The laser itself is simulated by the scripts in `scripts/laser_cleaning/`: a raycast of the scan pattern onto the workpiece with a dose model that colours rust, cleaned and overexposed surface. See [scripts/laser_cleaning/README.md](scripts/laser_cleaning/README.md).
 
 ## Adding ROS2 Omnigraphs
 ### Option A: Standalone ROS builder
@@ -163,7 +192,7 @@ class Builder:
         with self.window.frame:
             with ui.VStack(spacing=8):
                 ui.Label("Isaac Sim 6.1 ROS2 OmniGraph Builder",style={"font_size":20})
-                ui.Label("Open and save gearbox_disassembly.usda before creation.",word_wrap=True)
+                ui.Label("Open and save gearbox_disassembly_ur5e.usda before creation.",word_wrap=True)
                 with ui.HStack(height=24): ui.CheckBox(model=self.pickit,width=24); ui.Label("Pickit: Zivid RGB, point cloud, camera info, and TF")
                 with ui.HStack(height=24): ui.CheckBox(model=self.moveit,width=24); ui.Label("MoveIt2: controller, joint state, and clock")
                 ui.Label("Zivid render-product resolution")
@@ -215,7 +244,7 @@ ROS2_OMNIGRAPH_BUILDER=Builder()
 
 ```
 
-1. Open and save `scenes/gearbox_disassembly.usda`.
+1. Open and save `scenes/gearbox_disassembly_ur5e.usda`.
 2. Open **Window → Script Editor**.
 3. Copy the **entire** contents into a new Python tab, and press **Run**.
 4. The **ROS2 OmniGraph Builder** window appears.
@@ -233,7 +262,7 @@ The GUI exposes these controls:
 | MoveIt2 | Creates controller, joint-state, and clock graph |
 | Width / Height | Zivid render-product resolution; default 972 × 600 |
 | I confirm replacement of selected existing graphs | Permits replacement of only selected graph paths |
-| Save scene after graph creation | Saves `gearbox_disassembly.usda` after successful creation |
+| Save scene after graph creation | Saves `gearbox_disassembly_ur5e.usda` after successful creation |
 
 
 ## OmniGraph details
@@ -290,6 +319,10 @@ Do not author physics, materials, colliders, or transforms below composed robot 
 ## License
 
 The **MIT License** applies only to original copyrightable material authored for this repository, except where a file, directory, or accompanying notice states otherwise. Third-party assets remain subject to their applicable rights, terms, notices, and redistribution conditions; see `THIRD_PARTY_NOTICES.md`.
+
+#### Robot, gripper and sensor models
+
+The UR5e (Universal Robots), CRX-5iA (FANUC), Robotiq 2F-140 and Zivid models are converted from their official upstream descriptions and stay under their upstream licenses (BSD-3-Clause for UR and Zivid, Apache-2.0 for FANUC, BSD-2-Clause for Robotiq). Each package keeps the license text and its provenance in a `LICENSES/` folder; see `THIRD_PARTY_NOTICES.md`.
 
 #### GearBox workpiece
 
