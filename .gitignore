@@ -5,3 +5,7 @@
 # Local USD recovery copies
 *.usd.bak
 *.usda.bak
+
+# Python bytecode (e.g. from running the laser scripts as modules)
+__pycache__/
+*.pyc

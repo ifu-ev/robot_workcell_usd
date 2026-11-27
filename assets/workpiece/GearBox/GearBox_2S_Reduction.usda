@@ -7,8 +7,8 @@
                 double radius = 5
             }
             dictionary Perspective = {
-                double3 position = (0.3908510614389819, 0.5258691264416203, 0.28466790941532544)
-                double3 target = (-0.05497757454514002, 0.04842614582128374, -0.022425866127460004)
+                double3 position = (0.2987411803216062, 0.6509941906651155, 0.10001714392731333)
+                double3 target = (-0.10464160805601558, 0.06700299207440441, -0.03135319288239351)
             }
             dictionary Right = {
                 double3 position = (0, -5, 0)
@@ -21,7 +21,7 @@
             string boundCamera = "/OmniverseKit_Persp"
         }
         dictionary omni_layer = {
-            string authoring_layer = "./GearBox_2S_Reduction.usda"
+            string authoring_layer = "./GearBox_2S_Reduction_pickplace.usda"
             dictionary locked = {
             }
             dictionary muteness = {
@@ -45,9 +45,16 @@ def Xform "World"
         prepend payload = @./subUSDs/SLD_edit.usd@
     )
     {
-        over "SLD"
+        token visibility = "inherited"
+
+        over "SLD" (
+            prepend apiSchemas = ["PhysxArticulationAPI"]
+        )
         {
+            bool physxArticulation:articulationEnabled = 0
+
             over "GEAR_BOX_LEFTSIDE_FROM_REAR" (
+                active = false
                 prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
             )
             {
@@ -62,6 +69,7 @@ def Xform "World"
             }
 
             over "COSMETIC_BEARING_20_42_12mm_03" (
+                active = false
                 prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
             )
             {
@@ -250,7 +258,7 @@ def Xform "World"
             }
 
             over "Cylindrical_3_proxy" (
-                active = true
+                active = false
             )
             {
             }
@@ -268,7 +276,7 @@ def Xform "World"
             }
 
             over "Cylindrical_4_proxy" (
-                active = true
+                active = false
             )
             {
             }
@@ -286,7 +294,7 @@ def Xform "World"
             }
 
             over "Cylindrical_5_proxy" (
-                active = true
+                active = false
             )
             {
             }
@@ -304,7 +312,7 @@ def Xform "World"
             }
 
             over "Cylindrical_6_proxy" (
-                active = true
+                active = false
             )
             {
             }
@@ -322,7 +330,7 @@ def Xform "World"
             }
 
             over "Cylindrical_7_proxy" (
-                active = true
+                active = false
             )
             {
             }
@@ -358,19 +366,23 @@ def Xform "World"
             }
 
             over "COSMETIC_BEARING_25_47_12mm" (
-                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI", "MaterialBindingAPI", "PhysicsMassAPI"]
             )
             {
+                rel material:binding:physics = </World/PickPlacePhysics/Materials/ExtractionLowFriction>
                 uniform token physics:approximation = "sdf"
+                float physics:density = 7850
                 float physxRigidBody:angularDamping = 0.5
                 float physxRigidBody:linearDamping = 0.1
                 float physxRigidBody:maxAngularVelocity = 50
+                float physxRigidBody:maxDepenetrationVelocity = 1
                 float physxRigidBody:maxLinearVelocity = 50
                 int physxRigidBody:solverPositionIterationCount = 64
                 int physxRigidBody:solverVelocityIterationCount = 4
             }
 
             over "retaining_ring_snap_ring_20mm" (
+                active = false
                 prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
             )
             {
@@ -384,58 +396,71 @@ def Xform "World"
             }
 
             over "OUTPUT_SHAFT" (
-                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI", "PhysicsMassAPI"]
             )
             {
+                rel material:binding:physics = </World/PickPlacePhysics/Materials/GripSurface>
                 uniform token physics:approximation = "sdf"
+                float physics:density = 7850
                 float physxRigidBody:angularDamping = 0.5
                 float physxRigidBody:linearDamping = 0.1
                 float physxRigidBody:maxAngularVelocity = 50
+                float physxRigidBody:maxDepenetrationVelocity = 1
                 float physxRigidBody:maxLinearVelocity = 50
                 int physxRigidBody:solverPositionIterationCount = 64
                 int physxRigidBody:solverVelocityIterationCount = 4
             }
 
             over "COSMETIC_BEARING_20_42_12mm" (
-                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI", "MaterialBindingAPI", "PhysicsMassAPI"]
             )
             {
+                rel material:binding:physics = </World/PickPlacePhysics/Materials/ExtractionLowFriction>
                 uniform token physics:approximation = "sdf"
+                float physics:density = 7850
                 float physxRigidBody:angularDamping = 0.5
                 float physxRigidBody:linearDamping = 0.1
                 float physxRigidBody:maxAngularVelocity = 50
+                float physxRigidBody:maxDepenetrationVelocity = 1
                 float physxRigidBody:maxLinearVelocity = 50
                 int physxRigidBody:solverPositionIterationCount = 64
                 int physxRigidBody:solverVelocityIterationCount = 4
             }
 
             over "OUTPUT_SHAFT_STOPPER_TUBE" (
-                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI", "PhysicsMassAPI"]
             )
             {
+                rel material:binding:physics = </World/PickPlacePhysics/Materials/GripSurface>
                 uniform token physics:approximation = "sdf"
+                float physics:density = 7850
                 float physxRigidBody:angularDamping = 0.5
                 float physxRigidBody:linearDamping = 0.1
                 float physxRigidBody:maxAngularVelocity = 50
+                float physxRigidBody:maxDepenetrationVelocity = 1
                 float physxRigidBody:maxLinearVelocity = 50
                 int physxRigidBody:solverPositionIterationCount = 64
                 int physxRigidBody:solverVelocityIterationCount = 4
             }
 
             over "GEAR_BOX_RIGHTSIDE_FROM_REAR" (
-                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI", "MaterialBindingAPI"]
             )
             {
+                rel material:binding:physics = </World/PickPlacePhysics/Materials/HousingSurface>
                 uniform token physics:approximation = "sdf"
+                bool physics:rigidBodyEnabled = 0
                 float physxRigidBody:angularDamping = 0.5
                 float physxRigidBody:linearDamping = 0.1
                 float physxRigidBody:maxAngularVelocity = 50
                 float physxRigidBody:maxLinearVelocity = 50
                 int physxRigidBody:solverPositionIterationCount = 64
                 int physxRigidBody:solverVelocityIterationCount = 4
+                token visibility = "inherited"
             }
 
             over "retaining_ring_snap_ring_20mm_01" (
+                active = false
                 prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
             )
             {
@@ -449,19 +474,23 @@ def Xform "World"
             }
 
             over "GEAR_C" (
-                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI", "PhysicsMassAPI"]
             )
             {
+                rel material:binding:physics = </World/PickPlacePhysics/Materials/GripSurface>
                 uniform token physics:approximation = "sdf"
+                float physics:density = 7850
                 float physxRigidBody:angularDamping = 0.5
                 float physxRigidBody:linearDamping = 0.1
                 float physxRigidBody:maxAngularVelocity = 50
+                float physxRigidBody:maxDepenetrationVelocity = 1
                 float physxRigidBody:maxLinearVelocity = 50
                 int physxRigidBody:solverPositionIterationCount = 64
                 int physxRigidBody:solverVelocityIterationCount = 4
             }
 
             over "retaining_ring_snap_ring_20mm_02" (
+                active = false
                 prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
             )
             {
@@ -475,6 +504,7 @@ def Xform "World"
             }
 
             over "COSMETIC_BEARING_25_47_12mm_01" (
+                active = false
                 prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
             )
             {
@@ -488,6 +518,7 @@ def Xform "World"
             }
 
             over "COSMETIC_BEARING_20_42_12mm_01" (
+                active = false
                 prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
             )
             {
@@ -501,19 +532,23 @@ def Xform "World"
             }
 
             over "GEAR_A_PINION" (
-                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI", "PhysicsMassAPI"]
             )
             {
+                rel material:binding:physics = </World/PickPlacePhysics/Materials/GripSurface>
                 uniform token physics:approximation = "sdf"
+                float physics:density = 7850
                 float physxRigidBody:angularDamping = 0.5
                 float physxRigidBody:linearDamping = 0.1
                 float physxRigidBody:maxAngularVelocity = 50
+                float physxRigidBody:maxDepenetrationVelocity = 1
                 float physxRigidBody:maxLinearVelocity = 50
                 int physxRigidBody:solverPositionIterationCount = 64
                 int physxRigidBody:solverVelocityIterationCount = 4
             }
 
             over "retaining_ring_snap_ring_20mm_03" (
+                active = false
                 prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
             )
             {
@@ -527,6 +562,7 @@ def Xform "World"
             }
 
             over "retaining_ring_snap_ring_25mm" (
+                active = false
                 prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
             )
             {
@@ -540,45 +576,59 @@ def Xform "World"
             }
 
             over "GEAR_B" (
-                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI", "PhysicsMassAPI"]
             )
             {
+                rel material:binding:physics = </World/PickPlacePhysics/Materials/GripSurface>
                 uniform token physics:approximation = "sdf"
+                float physics:density = 7850
                 float physxRigidBody:angularDamping = 0.5
                 float physxRigidBody:linearDamping = 0.1
                 float physxRigidBody:maxAngularVelocity = 50
+                float physxRigidBody:maxDepenetrationVelocity = 1
                 float physxRigidBody:maxLinearVelocity = 50
                 int physxRigidBody:solverPositionIterationCount = 64
                 int physxRigidBody:solverVelocityIterationCount = 4
+                quatd xformOp:orient = (0.5147159801066938, 0.016944344552481474, -0.010175249030311423, -0.8571329029489323)
+                float3 xformOp:scale = (1, 1, 1)
+                double3 xformOp:translate = (-0.12332604226890206, -0.01071410101727172, -0.06450136007010068)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
             }
 
             over "_rd_GEAR_SHAFT_STOPPER_TUBE" (
-                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI", "PhysicsMassAPI"]
             )
             {
+                rel material:binding:physics = </World/PickPlacePhysics/Materials/GripSurface>
                 uniform token physics:approximation = "sdf"
+                float physics:density = 7850
                 float physxRigidBody:angularDamping = 0.5
                 float physxRigidBody:linearDamping = 0.1
                 float physxRigidBody:maxAngularVelocity = 50
+                float physxRigidBody:maxDepenetrationVelocity = 1
                 float physxRigidBody:maxLinearVelocity = 50
                 int physxRigidBody:solverPositionIterationCount = 64
                 int physxRigidBody:solverVelocityIterationCount = 4
             }
 
             over "COSMETIC_BEARING_20_42_12mm_02" (
-                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI", "MaterialBindingAPI", "PhysicsMassAPI"]
             )
             {
+                rel material:binding:physics = </World/PickPlacePhysics/Materials/ExtractionLowFriction>
                 uniform token physics:approximation = "sdf"
+                float physics:density = 7850
                 float physxRigidBody:angularDamping = 0.5
                 float physxRigidBody:linearDamping = 0.1
                 float physxRigidBody:maxAngularVelocity = 50
+                float physxRigidBody:maxDepenetrationVelocity = 1
                 float physxRigidBody:maxLinearVelocity = 50
                 int physxRigidBody:solverPositionIterationCount = 64
                 int physxRigidBody:solverVelocityIterationCount = 4
             }
 
             over "retaining_ring_snap_ring_25mm_01" (
+                active = false
                 prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
             )
             {
@@ -592,16 +642,259 @@ def Xform "World"
             }
 
             over "GEAR_D" (
-                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI"]
+                prepend apiSchemas = ["PhysxRigidBodyAPI", "PhysxSDFMeshCollisionAPI", "PhysicsMassAPI"]
             )
             {
+                rel material:binding:physics = </World/PickPlacePhysics/Materials/GripSurface>
                 uniform token physics:approximation = "sdf"
+                float physics:density = 7850
                 float physxRigidBody:angularDamping = 0.5
                 float physxRigidBody:linearDamping = 0.1
                 float physxRigidBody:maxAngularVelocity = 50
+                float physxRigidBody:maxDepenetrationVelocity = 1
                 float physxRigidBody:maxLinearVelocity = 50
                 int physxRigidBody:solverPositionIterationCount = 64
                 int physxRigidBody:solverVelocityIterationCount = 4
+                quatd xformOp:orient = (0.7192217985070921, 0.013729297136771698, -0.014218048574688467, -0.6944993578449744)
+                float3 xformOp:scale = (1, 1, 1)
+                double3 xformOp:translate = (-0.033148054836305195, -0.010714100417525506, -0.0419197174680567)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+            }
+
+            over "Cylindrical_10_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_11_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_12_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_13_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_14_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_15_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_16_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_17_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_18_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_19_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_1_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_20_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_21_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_2_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_8_proxy" (
+                active = false
+            )
+            {
+            }
+
+            over "Cylindrical_9_proxy" (
+                active = false
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "PickPlacePhysics"
+    {
+        def Xform "FixedJoints"
+        {
+            def PhysicsFixedJoint "LockedGroup1_00"
+            {
+                rel physics:body0 = </World/SLD/SLD/GEAR_D>
+                rel physics:body1 = </World/SLD/SLD/OUTPUT_SHAFT>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (-3.469447e-18, -6.938894e-18, -0.0075)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (2.8327693e-16, 1, -5.523024e-15, 1.5856457e-16)
+            }
+
+            def PhysicsFixedJoint "LockedGroup1_01"
+            {
+                rel physics:body0 = </World/SLD/SLD/GEAR_D>
+                rel physics:body1 = </World/SLD/SLD/COSMETIC_BEARING_25_47_12mm>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (-1.20042865e-14, -1.3877788e-17, 0.0355)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (0.7193623, 1.1718777e-13, -1.2146825e-13, -0.69463503)
+            }
+
+            def PhysicsFixedJoint "LockedGroup1_03"
+            {
+                rel physics:body0 = </World/SLD/SLD/GEAR_D>
+                rel physics:body1 = </World/SLD/SLD/OUTPUT_SHAFT_STOPPER_TUBE>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (8.673617e-18, 0, 0.018)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (-0.05733659, 1.496481e-16, 1.1477701e-16, 0.9983549)
+            }
+
+            def PhysicsFixedJoint "LockedGroup2_01"
+            {
+                rel physics:body0 = </World/SLD/SLD/GEAR_C>
+                rel physics:body1 = </World/SLD/SLD/GEAR_B>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (1.3877788e-17, 6.938894e-17, 0.017)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+
+            def PhysicsFixedJoint "LockedGroup2_02"
+            {
+                rel physics:body0 = </World/SLD/SLD/GEAR_C>
+                rel physics:body1 = </World/SLD/SLD/_rd_GEAR_SHAFT_STOPPER_TUBE>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (-5.551115e-17, -1.3877788e-17, 0.0265)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (-0.65606207, -1.036318e-15, 7.492208e-16, 0.754707)
+            }
+
+            def PhysicsFixedJoint "LockedGroup2_03"
+            {
+                rel physics:body0 = </World/SLD/SLD/GEAR_C>
+                rel physics:body1 = </World/SLD/SLD/COSMETIC_BEARING_20_42_12mm_02>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (-2.2759572e-15, -1.7347235e-18, 0.0335)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (-0.5148165, -2.9316986e-14, 1.7798117e-14, 0.85730034)
+            }
+
+            def PhysicsFixedJoint "LockedGroup3_01"
+            {
+                rel physics:body0 = </World/SLD/SLD/GEAR_A_PINION>
+                rel physics:body1 = </World/SLD/SLD/COSMETIC_BEARING_20_42_12mm>
+                point3f physics:localPos0 = (0, 0, 0)
+                point3f physics:localPos1 = (-9.436896e-16, 5.2041704e-17, 0.0165)
+                quatf physics:localRot0 = (1, 0, 0, 0)
+                quatf physics:localRot1 = (0.9285814, -1.0346428e-14, -2.5864673e-14, 0.3711287)
+            }
+        }
+
+        def Xform "CollisionGroups"
+        {
+            def PhysicsCollisionGroup "LockedGroup1"
+            {
+                rel collection:colliders:includes = [
+                    </World/SLD/SLD/OUTPUT_SHAFT>,
+                    </World/SLD/SLD/COSMETIC_BEARING_25_47_12mm>,
+                    </World/SLD/SLD/GEAR_D>,
+                    </World/SLD/SLD/OUTPUT_SHAFT_STOPPER_TUBE>,
+                ]
+                rel physics:filteredGroups = </World/PickPlacePhysics/CollisionGroups/LockedGroup1>
+            }
+
+            def PhysicsCollisionGroup "LockedGroup2"
+            {
+                rel collection:colliders:includes = [
+                    </World/SLD/SLD/GEAR_C>,
+                    </World/SLD/SLD/GEAR_B>,
+                    </World/SLD/SLD/_rd_GEAR_SHAFT_STOPPER_TUBE>,
+                    </World/SLD/SLD/COSMETIC_BEARING_20_42_12mm_02>,
+                ]
+                rel physics:filteredGroups = </World/PickPlacePhysics/CollisionGroups/LockedGroup2>
+            }
+
+            def PhysicsCollisionGroup "LockedGroup3"
+            {
+                rel collection:colliders:includes = [
+                    </World/SLD/SLD/GEAR_A_PINION>,
+                    </World/SLD/SLD/COSMETIC_BEARING_20_42_12mm>,
+                ]
+                rel physics:filteredGroups = </World/PickPlacePhysics/CollisionGroups/LockedGroup3>
+            }
+        }
+
+        def Material "Materials"
+        {
+            def Material "ExtractionLowFriction" (
+                prepend apiSchemas = ["PhysicsMaterialAPI"]
+            )
+            {
+                float physics:dynamicFriction = 0.01
+                float physics:restitution = 0
+                float physics:staticFriction = 0.03
+            }
+
+            def Material "GripSurface" (
+                prepend apiSchemas = ["PhysicsMaterialAPI"]
+            )
+            {
+                float physics:dynamicFriction = 1
+                float physics:restitution = 0
+                float physics:staticFriction = 1.2
+            }
+
+            def Material "HousingSurface" (
+                prepend apiSchemas = ["PhysicsMaterialAPI"]
+            )
+            {
+                float physics:dynamicFriction = 0.4
+                float physics:restitution = 0
+                float physics:staticFriction = 0.5
             }
         }
     }
@@ -630,5 +923,190 @@ def Xform "Environment"
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
     }
+}
+
+def "Render" (
+    hide_in_stage_window = true
+    no_delete = true
+)
+{
+    def "OmniverseKit"
+    {
+        def "HydraTextures" (
+            hide_in_stage_window = true
+            no_delete = true
+        )
+        {
+            def RenderProduct "omni_kit_widget_viewport_ViewportTexture_0" (
+                prepend apiSchemas = ["OmniRtxSettingsCommonAdvancedAPI_1", "OmniRtxSettingsRtAdvancedAPI_1", "OmniRtxSettingsPtAdvancedAPI_1", "OmniRtxPostColorGradingAPI_1", "OmniRtxPostChromaticAberrationAPI_1", "OmniRtxPostBloomPhysicalAPI_1", "OmniRtxPostMatteObjectAPI_1", "OmniRtxPostCompositingAPI_1", "OmniRtxPostDofAPI_1", "OmniRtxPostMotionBlurAPI_1", "OmniRtxPostTvNoiseAPI_1", "OmniRtxPostTonemapIrayReinhardAPI_1", "OmniRtxPostDebugSettingsAPI_1", "OmniRtxDebugSettingsAPI_1"]
+                hide_in_stage_window = true
+                no_delete = true
+            )
+            {
+                rel camera = </OmniverseKit_Persp>
+                token omni:rtx:ambientOcclusion:denoiserMode = "none"
+                token omni:rtx:background:source:texture:textureMode = "repeatMirrored"
+                token omni:rtx:background:source:type = "domeLight"
+                bool omni:rtx:debug:view:pixelDebug:enableFixedTextPos = 1
+                token omni:rtx:directLighting:sampledLighting:denoisingTechnique = "None"
+                bool omni:rtx:dlss:frameGeneration = 0
+                float3 omni:rtx:domeLight:rotationAxis = (0, 0, 1)
+                bool omni:rtx:indirectDiffuse:denoiser:enabled = 0
+                bool omni:rtx:material:db:nonVisualMaterialCSV:enabled = 0
+                bool omni:rtx:material:db:syncLoads = 1
+                token omni:rtx:post:dlss:execMode = "performance"
+                bool omni:rtx:post:registeredCompositing:invertColorCorrection = 1
+                bool omni:rtx:post:registeredCompositing:invertToneMap = 1
+                bool omni:rtx:pt:adaptiveSampling:filterError = 0
+                uint omni:rtx:pt:adaptiveSampling:fixedSppIterations = 2
+                bool omni:rtx:pt:lightcache:cached:dontResolveConflicts = 1
+                int omni:rtx:pt:maxSamplesPerLaunch = 2073600
+                int omni:rtx:pt:mgpu:maxPixelsPerRegionExponent = 12
+                bool omni:rtx:reflections:denoiser:enabled = 0
+                token omni:rtx:rendermode = "RaytracedLighting"
+                color3f omni:rtx:rt:ambientLight:color = (0.1, 0.1, 0.1)
+                bool omni:rtx:rt:demoire = 0
+                bool omni:rtx:rt:ecoMode:enabled
+                bool omni:rtx:rt:lightcache:spatialCache:dontResolveConflicts = 1
+                int omni:rtx:rt:sss:samples = 1
+                uint omni:rtx:rtpt:maxVolumeBounces = 15
+                float omni:rtx:rtpt:modulatingRoughnessThreshold = 0.08
+                bool omni:rtx:scene:hydra:materialSyncLoads = 1
+                bool omni:rtx:scene:hydra:mdlMaterialWarmup = 1
+                uint omni:rtx:viewTile:limit = 4294967295
+                rel orderedVars = </Render/Vars/LdrColor>
+                custom bool overrideClipRange = 0
+                uniform int2 resolution = (1280, 720)
+            }
+        }
+    }
+
+    def RenderSettings "OmniverseGlobalRenderSettings" (
+        prepend apiSchemas = ["OmniRtxSettingsGlobalRtAdvancedAPI_1", "OmniRtxSettingsGlobalPtAdvancedAPI_1"]
+        no_delete = true
+    )
+    {
+        rel products = </Render/OmniverseKit/HydraTextures/omni_kit_widget_viewport_ViewportTexture_0>
+    }
+
+    def "Vars"
+    {
+        def RenderVar "LdrColor" (
+            hide_in_stage_window = true
+            no_delete = true
+        )
+        {
+            uniform string sourceName = "LdrColor"
+        }
+    }
+}
+
+over "OmniverseKit_Persp" (
+    prepend apiSchemas = ["OmniRtxCameraAutoExposureAPI_1", "OmniRtxCameraExposureAPI_1"]
+    customData = {
+        dictionary omni = {
+            dictionary kit = {
+                bool hide_in_stage_window = 1
+                bool no_delete = 1
+            }
+        }
+    }
+    hide_in_stage_window = true
+    kind = "component"
+    no_delete = true
+)
+{
+    float2 clippingRange = (0.01, 10000000)
+    float exposure:fStop = 5
+    float exposure:responsivity = 1.1026709
+    float exposure:time = 0.02
+    float focalLength = 18.147562
+    float focusDistance = 400
+    custom uniform vector3d omni:kit:centerOfInterest = (0, -2.7755575615628914e-17, -0.7218182315404734)
+    float3 xformOp:rotateXYZ = (79.51377, 1.2722219e-14, 145.36583)
+    float3 xformOp:scale = (1, 1, 1)
+    double3 xformOp:translate = (0.2987411803216062, 0.6509941906651155, 0.10001714392731333)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
+}
+
+def PhysicsScene "PhysicsScene" (
+    prepend apiSchemas = ["PhysxSceneAPI"]
+)
+{
+}
+
+over "OmniverseKit_Front" (
+    customData = {
+        dictionary omni = {
+            dictionary kit = {
+                bool hide_in_stage_window = 1
+                bool no_delete = 1
+            }
+        }
+    }
+    hide_in_stage_window = true
+    kind = "component"
+    no_delete = true
+)
+{
+    float2 clippingRange = (1, 10000000)
+    float horizontalAperture = 50
+    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -5)
+    token projection = "orthographic"
+    float verticalAperture = 50
+    float3 xformOp:rotateXYZ = (90, -1.2722219e-14, 90)
+    float3 xformOp:scale = (1, 1, 1)
+    double3 xformOp:translate = (5, 0, 0)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
+}
+
+over "OmniverseKit_Right" (
+    customData = {
+        dictionary omni = {
+            dictionary kit = {
+                bool hide_in_stage_window = 1
+                bool no_delete = 1
+            }
+        }
+    }
+    hide_in_stage_window = true
+    kind = "component"
+    no_delete = true
+)
+{
+    float2 clippingRange = (1, 10000000)
+    float horizontalAperture = 50
+    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -5)
+    token projection = "orthographic"
+    float verticalAperture = 50
+    float3 xformOp:rotateXYZ = (90, -1.41245e-30, 1.2722219e-14)
+    float3 xformOp:scale = (1, 1, 1)
+    double3 xformOp:translate = (0, -5, 0)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
+}
+
+over "OmniverseKit_Top" (
+    customData = {
+        dictionary omni = {
+            dictionary kit = {
+                bool hide_in_stage_window = 1
+                bool no_delete = 1
+            }
+        }
+    }
+    hide_in_stage_window = true
+    kind = "component"
+    no_delete = true
+)
+{
+    float2 clippingRange = (1, 10000000)
+    float horizontalAperture = 50
+    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -5)
+    token projection = "orthographic"
+    float verticalAperture = 50
+    float3 xformOp:rotateXYZ = (-1.2722219e-14, -7.016709e-15, -90)
+    float3 xformOp:scale = (1, 1, 1)
+    double3 xformOp:translate = (0, 0, 5)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
 }
 

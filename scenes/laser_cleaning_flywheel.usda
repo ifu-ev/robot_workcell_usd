@@ -1,0 +1,35 @@
+#usda 1.0
+(
+    doc = """Laser-cleaning cell with the flywheel target.
+The cell itself (robot, laser head, Zivid, ROS graphs, physics) comes from the
+laser_cleaning.usda sublayer; this layer only adds the target, so fixes to the
+cell carry over. The target is placed the way scripts/laser_cleaning/env_generation.py
+places it: an Xform with (translate, rotateX, scale) referencing the asset, laid
+flat (rotateX 90) on the conveyor rollers (top z = 0.7674) with its centre where
+the Zivid optical axis meets the belt (0.844, 1.271)."""
+    defaultPrim = "World"
+    endTimeCode = 1000000
+    metersPerUnit = 1
+    startTimeCode = 0
+    subLayers = [
+        @./laser_cleaning.usda@
+    ]
+    timeCodesPerSecond = 60
+    upAxis = "Z"
+)
+
+over "World"
+{
+    over "targets"
+    {
+        def Xform "part" (
+            prepend references = @../assets/workpiece/FlyWheel/FlyWheel_Rusted.usd@
+        )
+        {
+            double3 xformOp:translate = (0.044, -0.03, -0.0204)
+            float xformOp:rotateX = 90
+            float3 xformOp:scale = (1, 1, 1)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateX", "xformOp:scale"]
+        }
+    }
+}

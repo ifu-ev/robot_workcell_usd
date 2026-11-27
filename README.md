@@ -1,12 +1,26 @@
 # Robot Workcell USD
 
-Portable Isaac Sim USD assets for a gearbox-disassembly workcell with a UR5e + Robotiq 2F-140, Zivid camera, fixed workcell, and gearbox.
+Portable Isaac Sim USD scenes and assets for three robot cells around a fixed workcell with a Zivid camera:
 
-## Workcell
+| Scene | Robot | Task |
+|---|---|---|
+| `scenes/gearbox_disassembly_ur5e.usda` | UR5e + Robotiq 2F-140 | Gearbox disassembly (tilted Zivid) |
+| `scenes/gearbox_disassembly_crx5ia.usda` | FANUC CRX-5iA + Robotiq 2F-140 | Gearbox disassembly (recentred Zivid) |
+| `scenes/laser_cleaning_flywheel.usda` | FANUC CRX-5iA + laser head | Laser cleaning of a rusted flywheel on a roller conveyor |
+
+All scenes include ROS 2 OmniGraphs (topic-based joint control, joint states, clock, Zivid camera, TF) and keep `/clock`, `/tf` and `/joint_states` monotonic across Stop/Play.
+
+## Workcell overview
+
+UR5e + Robotiq 2F-140 (`scenes/gearbox_disassembly_ur5e.usda`):
 
 ![Isaac Sim gearbox-disassembly workcell with UR5e, Robotiq 2F-140 gripper, Zivid camera, enclosure and gearbox](docs/images/workcell.png)
 
-## Gearbox
+FANUC CRX-5iA + Robotiq 2F-140 (`scenes/gearbox_disassembly_crx5ia.usda`):
+
+![Isaac Sim gearbox-disassembly workcell with FANUC CRX-5iA, Robotiq 2F-140 gripper, Zivid camera, enclosure and gearbox](docs/images/workcell_crx5ia.png)
+
+## Gearbox workpiece
 
 ![Two-stage reduction gearbox, showing its housing, gears, shafts, bearings etc.](docs/images/gearbox.png)
 
@@ -15,34 +29,43 @@ Portable Isaac Sim USD assets for a gearbox-disassembly workcell with a UR5e + R
 
 ```text
 ├── assets
-│   ├── grippers
-│   ├── robots
-│   │   └── ur5e_with_robotiq_2f_140
-│   ├── sensors
-│   │   └── zivid
-│   ├── textures
-│   │   └── fabric_0032_normal_opengl_1k.png
-│   ├── workcells
-│   │   └── racpro-isaac
-│   └── workpiece
-│       └── GearBox
+│   ├── grippers
+│   │   └── robotiq_2f_140             # shared by both gripper robots
+│   ├── robots
+│   │   ├── ur5e_with_robotiq_2f_140
+│   │   ├── crx5ia_with_robotiq_2f_140
+│   │   └── crx5ia_with_laser_head
+│   ├── sensors
+│   │   └── zivid
+│   ├── textures
+│   │   └── fabric_0032_normal_opengl_1k.png
+│   ├── workcells
+│   │   └── racpro-isaac
+│   └── workpiece
+│       ├── GearBox
+│       └── FlyWheel
 ├── docs
 │   └── images
-│       ├── gearbox.jpg
-│       └── workcell.jpg
+│       ├── gearbox.png
+│       ├── workcell.png
+│       └── workcell_crx5ia.png
 ├── LICENSE.txt
 ├── README.md
 ├── scenes
-│   └── gearbox_disassembly.usda
+│   ├── gearbox_disassembly_ur5e.usda
+│   ├── gearbox_disassembly_crx5ia.usda
+│   ├── laser_cleaning.usda              # laser cell without a workpiece
+│   └── laser_cleaning_flywheel.usda     # laser cell + flywheel
 ├── scripts
-│   └── add_pickit_and_ros2_omnigraph.py
+│   ├── add_pickit_and_ros2_omnigraph.py
+│   └── laser_cleaning                 # laser simulation (see its README.md)
 └── THIRD_PARTY_NOTICES.md
-
-
 ```
+
 ## Requirements
 
-- NVIDIA Isaac Sim **5.1**.
+- NVIDIA Isaac Sim **5.1** (tested with 5.1.0). This branch has the same scenes and assets as `isaacsim_6.1`, with the ROS 2 graphs built from the Isaac Sim 5.1 nodes (see [OmniGraph details](#omnigraph-details)).
+- Internet access for the laser cell: its conveyor is loaded from NVIDIA's Isaac Sim asset server.
 - ROS 2 Jazzy (Only for ROS2 topic based controller or point cloud publisher)
 
 Set your Isaac Sim location once per terminal:
@@ -51,30 +74,41 @@ Set your Isaac Sim location once per terminal:
 export ISAACSIM_ROOT="$HOME/isaacsim"
 ```
 
-Source the Isaac Sim supported ROS 2 distribution:
+Start Isaac Sim 5.1 with its bundled ROS 2 Jazzy libraries. Isaac Sim 5.1 runs Python 3.11, and a system ROS 2 Jazzy (Python 3.12) sourced in the same terminal stops its Python ROS 2 API (`rclpy`) from loading: the OmniGraphs still publish, but Python ROS 2 code such as the laser script's `/laser/enable` subscriber fails. In the terminal that starts Isaac Sim, do not source `/opt/ros/jazzy` (if your `~/.bashrc` sources it, start from a clean shell, e.g. `env -i HOME="$HOME" PATH=/usr/bin:/bin DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" bash --norc`, and export `ISAACSIM_ROOT` and `ROS_DOMAIN_ID` there); instead:
 
 ```bash
-source /opt/ros/<your_ros_distro>/setup.bash
+export ROS_DISTRO=jazzy
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ISAACSIM_ROOT/exts/isaacsim.ros2.bridge/jazzy/lib"
+"$ISAACSIM_ROOT/isaac-sim.sh"
 ```
+
+Run other ROS 2 tools (`ros2 topic`, MoveIt) in terminals with `/opt/ros/jazzy/setup.bash` sourced and the same `ROS_DOMAIN_ID`.
 
 ## Clone the repository
 
 ```bash
-git clone <your-repository-url> robot_workcell_usd
+git clone https://github.com/ifu-ev/robot_workcell_usd.git robot_workcell_usd
 cd robot_workcell_usd
 git checkout isaacsim_5.1
 
 ```
 
-## Open the base scene
+## Open a scene
 
-Start Isaac Sim 5.1 and open:
+Start Isaac Sim 5.1 and open one of the scenes, e.g.:
 
 ```text
-<repository-root>/scenes/gearbox_disassembly.usda
+<repository-root>/scenes/gearbox_disassembly_ur5e.usda
 ```
 
-Open `scenes/gearbox_disassembly.usda` in Isaac Sim 5.1. Before adding ROS graphs, press Play and confirm that the robot, gripper, workcell, and gearbox are stable.
+Press Play and confirm that the robot, gripper (or laser head), workcell and workpiece are stable. The ROS 2 graphs are already part of the scenes; the builder below recreates them for the UR5e scene.
+
+## Laser-cleaning cell
+
+`scenes/laser_cleaning.usda` is the cell without a workpiece: CRX-5iA with laser head (emitter 0.18 m along `fanuc_flange` +Z), Zivid camera, roller conveyor, ROS 2 graphs and physics, plus an empty `/World/targets` group. `scenes/laser_cleaning_flywheel.usda` sublayers it and adds the rusted flywheel at `/World/targets/part`, resting on the rollers under the Zivid axis. To use another workpiece, add a scene that sublayers `laser_cleaning.usda` and references the part at `/World/targets/part`; keep `laser_cleaning.usda` itself free of workpieces so that every target scene picks up changes to the cell.
+
+The laser itself is simulated by the scripts in `scripts/laser_cleaning/`: a raycast of the scan pattern onto the workpiece with a dose model that colours rust, cleaned and overexposed surface. See [scripts/laser_cleaning/README.md](scripts/laser_cleaning/README.md).
 
 ## Adding ROS2 Omnigraphs
 ### Option A: Standalone ROS builder
@@ -116,297 +150,112 @@ The full builder creates:
 Use this option when the scene is already open in Isaac Sim. The complete GUI code is committed as:
 
 ```python
-# Isaac Sim 5.1 Script Editor tool.
-# Run only with a saved gearbox_disassembly.usda stage already open.
-# This script creates selected ROS 2 OmniGraphs and can save the root USD layer.
-
+# Paste this complete file into Isaac Sim 5.1 Window > Script Editor and press Run.
 from pxr import Sdf, Usd
 import omni.graph.core as og
 import omni.kit.app
 import omni.ui as ui
 import omni.usd
-import carb
 import traceback
 
-LOG_PATH = "/tmp/isaacsim_ros2_omnigraph_builder.log"
+# Set the following to your specific scene
+ROBOT="/World/ur5e_"
+JOINT=f"{ROBOT}/root_joint" 
+CAMERA="/World/Zivid/projector" 
+PARENT=f"{ROBOT}/world"
+ROOT="/World/ROS2" 
+CTRL=f"{ROOT}/Topic_Based_Controller" 
+CAM=f"{ROOT}/Camera_Publisher" 
+TF=f"{ROOT}/TF_Publisher"
 
-ROBOT_PRIM = "/World/ur5e_"
-JOINT_STATE_PRIM = "/World/ur5e_/root_joint"
-CAMERA_PRIM = "/World/Zivid/projector"
-TF_PARENT_PRIM = "/World/ur5e_/world"
-ROS_ROOT = "/World/ROS2"
-CTRL_GRAPH = f"{ROS_ROOT}/Topic_Based_Controller"
-CAM_GRAPH = f"{ROS_ROOT}/Camera_Publisher"
-TF_GRAPH = f"{ROS_ROOT}/TF_Publisher"
+def edit(path,nodes,links,values=()):
+    k=og.Controller.Keys; d={k.CREATE_NODES:nodes,k.CONNECT:links}
+    if values: d[k.SET_VALUES]=list(values)
+    og.Controller.edit({"graph_path":path,"evaluator_name":"execution"},d)
 
+def rel(stage,path,name,targets):
+    r=stage.GetPrimAtPath(path).GetRelationship(name)
+    if not r: raise RuntimeError(f"Missing relationship: {path}.{name}")
+    r.SetTargets([Sdf.Path(x) for x in targets])
 
-def log_event(level, message):
-    line = f"[ROS2_GRAPH_BUILDER] {message}"
-    print(line)
-    with open(LOG_PATH, "a", encoding="utf-8") as stream:
-        stream.write(line + "\\n")
-    if level == "error":
-        carb.log_error(line)
-    elif level == "warning":
-        carb.log_warn(line)
-    else:
-        carb.log_info(line)
+def controller(s):
+    edit(CTRL,[("tick","omni.graph.action.OnPlaybackTick"),("pub","isaacsim.ros2.bridge.ROS2PublishJointState"),("sub","isaacsim.ros2.bridge.ROS2SubscribeJointState"),("ctrl","isaacsim.core.nodes.IsaacArticulationController"),("ctx","isaacsim.ros2.bridge.ROS2Context"),("qos","isaacsim.ros2.bridge.ROS2QoSProfile"),("time","isaacsim.core.nodes.IsaacReadSimulationTime"),("clock","isaacsim.ros2.bridge.ROS2PublishClock")],[("tick.outputs:tick","pub.inputs:execIn"),("tick.outputs:tick","sub.inputs:execIn"),("tick.outputs:tick","ctrl.inputs:execIn"),("tick.outputs:tick","clock.inputs:execIn"),("ctx.outputs:context","pub.inputs:context"),("ctx.outputs:context","sub.inputs:context"),("ctx.outputs:context","clock.inputs:context"),("qos.outputs:qosProfile","pub.inputs:qosProfile"),("qos.outputs:qosProfile","sub.inputs:qosProfile"),("qos.outputs:qosProfile","clock.inputs:qosProfile"),("time.outputs:simulationTime","pub.inputs:timeStamp"),("time.outputs:simulationTime","clock.inputs:timeStamp"),("sub.outputs:jointNames","ctrl.inputs:jointNames"),("sub.outputs:positionCommand","ctrl.inputs:positionCommand"),("sub.outputs:velocityCommand","ctrl.inputs:velocityCommand"),("sub.outputs:effortCommand","ctrl.inputs:effortCommand")],[("time.inputs:resetOnStop",True),("ctrl.inputs:robotPath",JOINT)])
+    rel(s,f"{CTRL}/pub","inputs:targetPrim",[JOINT]); rel(s,f"{CTRL}/ctrl","inputs:targetPrim",[ROBOT])
 
-
-def ensure_ros2_bridge():
-    manager = omni.kit.app.get_app().get_extension_manager()
-    extension = "isaacsim.ros2.bridge"
-    if not manager.is_extension_enabled(extension):
-        manager.set_extension_enabled_immediate(extension, True)
-        log_event("info", f"Enabled extension: {extension}")
-
-
-def edit_graph(path, nodes, connections, values=()):
-    keys = og.Controller.Keys
-    commands = {
-        keys.CREATE_NODES: nodes,
-        keys.CONNECT: connections,
-    }
-    if values:
-        commands[keys.SET_VALUES] = list(values)
-    log_event("info", f"Creating graph {path}: {len(nodes)} nodes, {len(connections)} connections")
-    return og.Controller.edit(
-        {"graph_path": path, "evaluator_name": "execution"},
-        commands,
-    )
-
-
-def set_rel(stage, prim_path, rel_name, targets):
-    prim = stage.GetPrimAtPath(prim_path)
-    if not prim.IsValid():
-        raise RuntimeError(f"Missing graph prim: {prim_path}")
-    relationship = prim.GetRelationship(rel_name)
-    if not relationship:
-        raise RuntimeError(f"Missing relationship: {prim_path}.{rel_name}")
-    relationship.SetTargets([Sdf.Path(target) for target in targets])
-
-
-def create_controller(stage):
-    edit_graph(
-        CTRL_GRAPH,
-        [
-            ("on_playback_tick", "omni.graph.action.OnPlaybackTick"),
-            ("ros2_publish_joint_state", "isaacsim.ros2.bridge.ROS2PublishJointState"),
-            ("ros2_subscribe_joint_state", "isaacsim.ros2.bridge.ROS2SubscribeJointState"),
-            ("articulation_controller", "isaacsim.core.nodes.IsaacArticulationController"),
-            ("ros2_context", "isaacsim.ros2.bridge.ROS2Context"),
-            ("ros2_qos_profile", "isaacsim.ros2.bridge.ROS2QoSProfile"),
-            ("isaac_read_simulation_time", "isaacsim.core.nodes.IsaacReadSimulationTime"),
-            ("ros2_publish_clock", "isaacsim.ros2.bridge.ROS2PublishClock"),
-        ],
-        [
-            ("on_playback_tick.outputs:tick", "ros2_publish_joint_state.inputs:execIn"),
-            ("on_playback_tick.outputs:tick", "ros2_subscribe_joint_state.inputs:execIn"),
-            ("on_playback_tick.outputs:tick", "articulation_controller.inputs:execIn"),
-            ("on_playback_tick.outputs:tick", "ros2_publish_clock.inputs:execIn"),
-            ("ros2_context.outputs:context", "ros2_publish_joint_state.inputs:context"),
-            ("ros2_context.outputs:context", "ros2_subscribe_joint_state.inputs:context"),
-            ("ros2_context.outputs:context", "ros2_publish_clock.inputs:context"),
-            ("ros2_qos_profile.outputs:qosProfile", "ros2_publish_joint_state.inputs:qosProfile"),
-            ("ros2_qos_profile.outputs:qosProfile", "ros2_subscribe_joint_state.inputs:qosProfile"),
-            ("ros2_qos_profile.outputs:qosProfile", "ros2_publish_clock.inputs:qosProfile"),
-            ("isaac_read_simulation_time.outputs:simulationTime", "ros2_publish_joint_state.inputs:timeStamp"),
-            ("isaac_read_simulation_time.outputs:simulationTime", "ros2_publish_clock.inputs:timeStamp"),
-            ("ros2_subscribe_joint_state.outputs:effortCommand", "articulation_controller.inputs:effortCommand"),
-            ("ros2_subscribe_joint_state.outputs:jointNames", "articulation_controller.inputs:jointNames"),
-            ("ros2_subscribe_joint_state.outputs:positionCommand", "articulation_controller.inputs:positionCommand"),
-            ("ros2_subscribe_joint_state.outputs:velocityCommand", "articulation_controller.inputs:velocityCommand"),
-        ],
-        [
-            ("isaac_read_simulation_time.inputs:resetOnStop", True),
-            ("articulation_controller.inputs:robotPath", JOINT_STATE_PRIM),
-        ],
-    )
-    set_rel(stage, f"{CTRL_GRAPH}/ros2_publish_joint_state", "inputs:targetPrim", [JOINT_STATE_PRIM])
-    set_rel(stage, f"{CTRL_GRAPH}/articulation_controller", "inputs:targetPrim", [ROBOT_PRIM])
-
-
-def create_pickit(stage, width, height):
-    edit_graph(
-        CAM_GRAPH,
-        [
-            ("on_playback_tick", "omni.graph.action.OnPlaybackTick"),
-            ("isaac_create_render_product", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
-            ("ros2_context", "isaacsim.ros2.bridge.ROS2Context"),
-            ("ros2_qos_profile", "isaacsim.ros2.bridge.ROS2QoSProfile"),
-            ("ros2_camera_helper", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-            ("ros2_camera_helper_02", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-            ("ros2_camera_info_helper", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
-        ],
-        [
-            ("on_playback_tick.outputs:tick", "isaac_create_render_product.inputs:execIn"),
-            ("isaac_create_render_product.outputs:execOut", "ros2_camera_helper.inputs:execIn"),
-            ("isaac_create_render_product.outputs:execOut", "ros2_camera_helper_02.inputs:execIn"),
-            ("isaac_create_render_product.outputs:execOut", "ros2_camera_info_helper.inputs:execIn"),
-            ("ros2_context.outputs:context", "ros2_camera_helper.inputs:context"),
-            ("ros2_context.outputs:context", "ros2_camera_helper_02.inputs:context"),
-            ("ros2_qos_profile.outputs:qosProfile", "ros2_camera_helper.inputs:qosProfile"),
-            ("ros2_qos_profile.outputs:qosProfile", "ros2_camera_helper_02.inputs:qosProfile"),
-            ("ros2_qos_profile.outputs:qosProfile", "ros2_camera_info_helper.inputs:qosProfile"),
-            ("isaac_create_render_product.outputs:renderProductPath", "ros2_camera_helper.inputs:renderProductPath"),
-            ("isaac_create_render_product.outputs:renderProductPath", "ros2_camera_helper_02.inputs:renderProductPath"),
-            ("isaac_create_render_product.outputs:renderProductPath", "ros2_camera_info_helper.inputs:renderProductPath"),
-        ],
-        [
-            ("isaac_create_render_product.inputs:width", width),
-            ("isaac_create_render_product.inputs:height", height),
-            ("ros2_qos_profile.inputs:depth", 5),
-            ("ros2_qos_profile.inputs:durability", "transientLocal"),
-            ("ros2_qos_profile.inputs:reliability", "bestEffort"),
-            ("ros2_camera_helper.inputs:frameId", "ZividCamera"),
-            ("ros2_camera_helper.inputs:queueSize", 10),
-            ("ros2_camera_helper.inputs:topicName", "ZividCamera/pointcloud"),
-            ("ros2_camera_helper.inputs:type", "depth_pcl"),
-            ("ros2_camera_helper.inputs:useSystemTime", False),
-            ("ros2_camera_helper_02.inputs:frameId", "ZividCamera"),
-            ("ros2_camera_helper_02.inputs:queueSize", 10),
-            ("ros2_camera_helper_02.inputs:topicName", "ZividCamera/rgb"),
-            ("ros2_camera_helper_02.inputs:type", "rgb"),
-            ("ros2_camera_helper_02.inputs:useSystemTime", False),
-            ("ros2_camera_info_helper.inputs:frameId", "ZividCamera"),
-            ("ros2_camera_info_helper.inputs:topicName", "ZividCamera/camera_info"),
-        ],
-    )
-    set_rel(stage, f"{CAM_GRAPH}/isaac_create_render_product", "inputs:cameraPrim", [CAMERA_PRIM])
-
-    edit_graph(
-        TF_GRAPH,
-        [
-            ("on_playback_tick", "omni.graph.action.OnPlaybackTick"),
-            ("ros2_publish_transform_tree", "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
-            ("isaac_read_simulation_time", "isaacsim.core.nodes.IsaacReadSimulationTime"),
-            ("ros2_context", "isaacsim.ros2.bridge.ROS2Context"),
-            ("ros2_qos_profile", "isaacsim.ros2.bridge.ROS2QoSProfile"),
-        ],
-        [
-            ("on_playback_tick.outputs:tick", "ros2_publish_transform_tree.inputs:execIn"),
-            ("ros2_context.outputs:context", "ros2_publish_transform_tree.inputs:context"),
-            ("ros2_qos_profile.outputs:qosProfile", "ros2_publish_transform_tree.inputs:qosProfile"),
-            ("isaac_read_simulation_time.outputs:simulationTime", "ros2_publish_transform_tree.inputs:timeStamp"),
-        ],
-    )
-    set_rel(stage, f"{TF_GRAPH}/ros2_publish_transform_tree", "inputs:parentPrim", [TF_PARENT_PRIM])
-    set_rel(stage, f"{TF_GRAPH}/ros2_publish_transform_tree", "inputs:targetPrims", [CAMERA_PRIM])
-
+def camera_and_tf(s,w,h):
+    edit(CAM,[("tick","omni.graph.action.OnPlaybackTick"),("rp","isaacsim.core.nodes.IsaacCreateRenderProduct"),("ctx","isaacsim.ros2.bridge.ROS2Context"),("qos","isaacsim.ros2.bridge.ROS2QoSProfile"),("pcl","isaacsim.ros2.bridge.ROS2CameraHelper"),("rgb","isaacsim.ros2.bridge.ROS2CameraHelper"),("info","isaacsim.ros2.bridge.ROS2CameraInfoHelper")],[("tick.outputs:tick","rp.inputs:execIn"),("rp.outputs:execOut","pcl.inputs:execIn"),("rp.outputs:execOut","rgb.inputs:execIn"),("rp.outputs:execOut","info.inputs:execIn"),("ctx.outputs:context","pcl.inputs:context"),("ctx.outputs:context","rgb.inputs:context"),("qos.outputs:qosProfile","pcl.inputs:qosProfile"),("qos.outputs:qosProfile","rgb.inputs:qosProfile"),("qos.outputs:qosProfile","info.inputs:qosProfile"),("rp.outputs:renderProductPath","pcl.inputs:renderProductPath"),("rp.outputs:renderProductPath","rgb.inputs:renderProductPath"),("rp.outputs:renderProductPath","info.inputs:renderProductPath")],[("rp.inputs:width",w),("rp.inputs:height",h),("qos.inputs:depth",5),("qos.inputs:durability","transientLocal"),("qos.inputs:reliability","bestEffort"),("pcl.inputs:frameId","ZividCamera"),("pcl.inputs:topicName","ZividCamera/pointcloud"),("pcl.inputs:type","depth_pcl"),("rgb.inputs:frameId","ZividCamera"),("rgb.inputs:topicName","ZividCamera/rgb"),("rgb.inputs:type","rgb"),("info.inputs:frameId","ZividCamera"),("info.inputs:topicName","ZividCamera/camera_info")])
+    rel(s,f"{CAM}/rp","inputs:cameraPrim",[CAMERA])
+    edit(TF,[("tick","omni.graph.action.OnPlaybackTick"),("pub","isaacsim.ros2.bridge.ROS2PublishTransformTree"),("time","isaacsim.core.nodes.IsaacReadSimulationTime"),("ctx","isaacsim.ros2.bridge.ROS2Context"),("qos","isaacsim.ros2.bridge.ROS2QoSProfile")],[("tick.outputs:tick","pub.inputs:execIn"),("time.outputs:simulationTime","pub.inputs:timeStamp"),("ctx.outputs:context","pub.inputs:context"),("qos.outputs:qosProfile","pub.inputs:qosProfile")])
+    rel(s,f"{TF}/pub","inputs:parentPrim",[PARENT]); rel(s,f"{TF}/pub","inputs:targetPrims",[CAMERA])
 
 class Builder:
     def __init__(self):
-        self.pickit = ui.SimpleBoolModel(True)
-        self.moveit = ui.SimpleBoolModel(True)
-        self.overwrite = ui.SimpleBoolModel(False)
-        self.save_after_create = ui.SimpleBoolModel(True)
-        self.width = ui.SimpleIntModel(972)
-        self.height = ui.SimpleIntModel(600)
-        self.window = ui.Window("ROS2 OmniGraph Builder", width=530, height=390)
-
+        self.pickit=ui.SimpleBoolModel(True); self.moveit=ui.SimpleBoolModel(True)
+        self.overwrite=ui.SimpleBoolModel(False); self.save=ui.SimpleBoolModel(True)
+        self.width=ui.SimpleIntModel(972); self.height=ui.SimpleIntModel(600)
+        self.window=ui.Window("ROS2 OmniGraph Builder",width=570,height=410)
         with self.window.frame:
             with ui.VStack(spacing=8):
-                ui.Label("ROS2 OmniGraph Builder", style={"font_size": 20})
-                ui.Label("Open and save gearbox_disassembly.usda before creating graphs.", word_wrap=True)
-                with ui.HStack(height=24):
-                    ui.CheckBox(model=self.pickit, width=24)
-                    ui.Label("Pickit: Zivid camera publishers + TF publisher")
-                with ui.HStack(height=24):
-                    ui.CheckBox(model=self.moveit, width=24)
-                    ui.Label("MoveIt2: topic controller + joint state + clock")
-                ui.Label("Camera render-product resolution")
+                ui.Label("Isaac Sim 5.1 ROS2 OmniGraph Builder",style={"font_size":20})
+                ui.Label("Open and save gearbox_disassembly_ur5e.usda before creation.",word_wrap=True)
+                with ui.HStack(height=24): ui.CheckBox(model=self.pickit,width=24); ui.Label("Pickit: Zivid RGB, point cloud, camera info, and TF")
+                with ui.HStack(height=24): ui.CheckBox(model=self.moveit,width=24); ui.Label("MoveIt2: controller, joint state, and clock")
+                ui.Label("Zivid render-product resolution")
                 with ui.HStack(height=28):
-                    ui.Label("Width", width=75)
-                    ui.IntField(model=self.width, width=130)
-                    ui.Label("Height", width=55)
-                    ui.IntField(model=self.height, width=130)
-                with ui.HStack(height=24):
-                    ui.CheckBox(model=self.overwrite, width=24)
-                    ui.Label("I confirm overwrite of selected existing graphs")
-                with ui.HStack(height=24):
-                    ui.CheckBox(model=self.save_after_create, width=24)
-                    ui.Label("Save scene after creation")
-                ui.Button("Create Graphs", height=34, clicked_fn=self.create)
-                self.status = ui.Label("Select graphs and press Create Graphs.", word_wrap=True, height=70)
+                    ui.Label("Width",width=65); ui.IntField(model=self.width,width=150)
+                    ui.Label("Height",width=65); ui.IntField(model=self.height,width=150)
+                with ui.HStack(height=24): ui.CheckBox(model=self.overwrite,width=24); ui.Label("I confirm replacement of selected existing graphs")
+                with ui.HStack(height=24): ui.CheckBox(model=self.save,width=24); ui.Label("Save scene after graph creation")
+                ui.Button("Create Graphs",height=36,clicked_fn=self.create)
+                self.status=ui.Label("Select graph types, then click Create Graphs.",word_wrap=True,height=64)
 
-    def message(self, text, level="info"):
-        self.status.text = text
-        log_event(level, text)
+    def message(self,text):
+        self.status.text=text; print("ROS2 OmniGraph Builder:",text)
 
     def create(self):
-        pickit = self.pickit.get_value_as_bool()
-        moveit = self.moveit.get_value_as_bool()
-        width = self.width.get_value_as_int()
-        height = self.height.get_value_as_int()
-
-        if not pickit and not moveit:
-            self.message("Select Pickit and/or MoveIt2.", "warning")
-            return
-        if width <= 0 or height <= 0:
-            self.message("Camera width and height must be positive.", "warning")
-            return
-
-        stage = omni.usd.get_context().get_stage()
-        if stage is None or stage.GetRootLayer().anonymous:
-            self.message("Open and save a USD stage before creating graphs.", "error")
-            return
-
-        required = ([] if not moveit else [ROBOT_PRIM, JOINT_STATE_PRIM])
-        required += ([] if not pickit else [CAMERA_PRIM, TF_PARENT_PRIM])
-        missing = [path for path in required if not stage.GetPrimAtPath(path).IsValid()]
-        if missing:
-            self.message("Missing required prim(s): " + ", ".join(missing), "error")
-            return
-
-        requested = ([] if not moveit else [CTRL_GRAPH])
-        requested += ([] if not pickit else [CAM_GRAPH, TF_GRAPH])
-        existing = [path for path in requested if stage.GetPrimAtPath(path).IsValid()]
-        if existing and not self.overwrite.get_value_as_bool():
-            self.message("Existing graph(s) found. Check overwrite and click again: " + ", ".join(existing), "warning")
-            return
-
         try:
-            ensure_ros2_bridge()
-            root_layer = stage.GetRootLayer()
-            with Usd.EditContext(stage, Usd.EditTarget(root_layer)):
-                if not stage.GetPrimAtPath(ROS_ROOT).IsValid():
-                    stage.DefinePrim(ROS_ROOT, "Scope")
-                for path in existing:
-                    stage.RemovePrim(path)
-                if moveit:
-                    create_controller(stage)
-                if pickit:
-                    create_pickit(stage, width, height)
-                if self.save_after_create.get_value_as_bool():
-                    root_layer.Save()
+            pickit=self.pickit.get_value_as_bool(); moveit=self.moveit.get_value_as_bool()
+            w=self.width.get_value_as_int(); h=self.height.get_value_as_int()
+            if not pickit and not moveit: raise RuntimeError("Select Pickit and/or MoveIt2.")
+            if w<=0 or h<=0: raise RuntimeError("Camera width and height must be positive.")
+            s=omni.usd.get_context().get_stage()
+            if s is None or s.GetRootLayer().anonymous: raise RuntimeError("Open and save a USD stage before creating graphs.")
+            needed=([] if not moveit else [ROBOT,JOINT])+([] if not pickit else [CAMERA,PARENT])
+            missing=[x for x in needed if not s.GetPrimAtPath(x).IsValid()]
+            if missing: raise RuntimeError("Missing required prim(s): "+", ".join(missing))
+            wanted=([] if not moveit else [CTRL])+([] if not pickit else [CAM,TF])
+            existing=[x for x in wanted if s.GetPrimAtPath(x).IsValid()]
+            if existing and not self.overwrite.get_value_as_bool():
+                raise RuntimeError("Existing graph(s): "+", ".join(existing)+". Check the overwrite confirmation box and click Create Graphs again to replace only these graphs.")
+            manager=omni.kit.app.get_app().get_extension_manager()
+            for ext in ("isaacsim.ros2.bridge",):
+                if not manager.is_extension_enabled(ext): manager.set_extension_enabled_immediate(ext,True)
+            with Usd.EditContext(s,Usd.EditTarget(s.GetRootLayer())):
+                if not s.GetPrimAtPath(ROOT).IsValid(): s.DefinePrim(ROOT,"Scope")
+                for x in existing: s.RemovePrim(x)
+                if moveit: controller(s)
+                if pickit: camera_and_tf(s,w,h)
+                if self.save.get_value_as_bool(): s.GetRootLayer().Save()
+            saved=" Scene saved." if self.save.get_value_as_bool() else " Save manually with Ctrl+S."
+            self.message("Created: "+", ".join(wanted)+"."+saved)
+        except Exception as e:
+            traceback.print_exc(); self.message("Creation failed: "+str(e))
 
-            made = ([] if not moveit else ["Topic_Based_Controller"])
-            made += ([] if not pickit else ["Camera_Publisher", "TF_Publisher"])
-            saved = " Scene saved." if self.save_after_create.get_value_as_bool() else " Save the scene manually with Ctrl+S."
-            self.message("Created: " + ", ".join(made) + "." + saved)
-        except Exception as exc:
-            details = traceback.format_exc()
-            log_event("error", f"Creation failed: {exc!r}\\n{details}")
-            self.message(f"Creation failed: {exc!r}. Full traceback: {LOG_PATH}", "error")
-
-
-try:
-    ROS2_OMNIGRAPH_BUILDER.window.visible = False
-except Exception:
-    pass
-ROS2_OMNIGRAPH_BUILDER = Builder()
+try: 
+  ROS2_OMNIGRAPH_BUILDER.window.visible=False
+except Exception as ex: 
+  print(f"\nWarning: {ex}\n")
+ROS2_OMNIGRAPH_BUILDER=Builder()
 
 ```
 
-1. Open and save `scenes/gearbox_disassembly.usda`.
+1. Open and save `scenes/gearbox_disassembly_ur5e.usda`.
 2. Open **Window → Script Editor**.
 3. Copy the **entire** contents into a new Python tab, and press **Run**.
 4. The **ROS2 OmniGraph Builder** window appears.
 5. Select one or both graph groups:
-<br>
-    a. Pickit: Enable to create ROS2 point cloud publisher
-<br>
-    b. Moveit: Enable to create `/joint_states` publisher and `/joint_command` subscriber
+    * **a. Pickit:** Enable to create ROS2 point cloud publisher
+    * **b. Moveit:** Enable to create `/joint_states` publisher and `/joint_command` subscriber
 6. Set the desired **camera resolution** for Pickit
 7. Press **Create Graphs**.
 
@@ -418,12 +267,12 @@ The GUI exposes these controls:
 | MoveIt2 | Creates controller, joint-state, and clock graph |
 | Width / Height | Zivid render-product resolution; default 972 × 600 |
 | I confirm replacement of selected existing graphs | Permits replacement of only selected graph paths |
-| Save scene after graph creation | Saves `gearbox_disassembly.usda` after successful creation |
+| Save scene after graph creation | Saves `gearbox_disassembly_ur5e.usda` after successful creation |
 
 
 ## OmniGraph details
 
-The builder validates these scene paths before it writes anything:
+Required stage contract:
 
 ```text
 Robot wrapper:           /World/ur5e_
@@ -432,27 +281,17 @@ Zivid camera:            /World/Zivid/projector
 TF parent:               /World/ur5e_/world
 ```
 
-The Isaac Sim 5.1 controller graph uses `Isaac Read Simulation Time` as the timestamp source for the ROS 2 joint-state and clock publishers:
+In Isaac Sim 5.1 the ROS 2 publishers read the robot and the camera themselves (Isaac Sim 6.x splits this into separate `IsaacReadJointState` and `IsaacComputeTransformTree` nodes, which 5.1 does not have):
 
 ```text
-Isaac Read Simulation Time
-  → ROS2 Publish Joint State.inputs:timeStamp
-  → ROS2 Publish Clock.inputs:timeStamp
+Joint states: ROS2PublishJointState.inputs:targetPrim     → /World/ur5e_/root_joint
+Timestamps:   IsaacReadSimulationTime.outputs:simulationTime
+              → ROS2PublishJointState.inputs:timeStamp, ROS2PublishClock.inputs:timeStamp
+TF:           ROS2PublishTransformTree.inputs:parentPrim  → /World/ur5e_/world
+              ROS2PublishTransformTree.inputs:targetPrims → /World/Zivid/projector
 ```
 
-The Isaac Sim 5.1 TF graph directly configures the ROS 2 Transform Tree publisher with USD relationships:
-
-```text
-ROS2 Publish Transform Tree.inputs:parentPrim
-  = /World/ur5e_/world
-
-ROS2 Publish Transform Tree.inputs:targetPrims
-  = /World/Zivid/projector
-```
-
-The TF publisher is executed from `On Playback Tick` and timestamped with `Isaac Read Simulation Time`.
-
-The default Zivid ROS 2 output is:
+Zivid output defaults:
 
 ```text
 Frame ID:     ZividCamera
@@ -484,6 +323,10 @@ Do not author physics, materials, colliders, or transforms below composed robot 
 ## License
 
 The **MIT License** applies only to original copyrightable material authored for this repository, except where a file, directory, or accompanying notice states otherwise. Third-party assets remain subject to their applicable rights, terms, notices, and redistribution conditions; see `THIRD_PARTY_NOTICES.md`.
+
+#### Robot, gripper and sensor models
+
+The UR5e (Universal Robots), CRX-5iA (FANUC), Robotiq 2F-140 and Zivid models are converted from their official upstream descriptions and stay under their upstream licenses (BSD-3-Clause for UR and Zivid, Apache-2.0 for FANUC, BSD-2-Clause for Robotiq). Each package keeps the license text and its provenance in a `LICENSES/` folder; see `THIRD_PARTY_NOTICES.md`.
 
 #### GearBox workpiece
 
